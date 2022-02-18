@@ -1,5 +1,7 @@
 green-flexural_BV/
 venv/
+.env
+*.pyc
 __init__.py
 .pytest_cache/
 __pycache__/
