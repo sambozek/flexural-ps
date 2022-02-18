@@ -5,6 +5,8 @@ import pandas as pd
 
 app = Dash(__name__)
 
+server = app.server
+
 df = pd.read_csv("https://gist.githubusercontent.com/sambozek/8b3af6bbc873402ae7b5678d30c5c8b2/raw/963c30fd0d87c09da1f71cf352fdeae6a3e8afdd/flex_0218.csv")
 df['Date'] = pd.to_datetime(df['Date'], format='%m_%d_%Y' )
 df['Formulation'] = df['Experiment'].apply(lambda x: x.split('_')[0])
