@@ -1,5 +1,6 @@
 green-flexural_BV/
 venv/
+env/
 .env
 *.pyc
 __init__.py

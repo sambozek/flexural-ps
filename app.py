@@ -11,8 +11,8 @@ df = pd.read_csv("https://gist.githubusercontent.com/sambozek/8b3af6bbc873402ae7
 df['Date'] = pd.to_datetime(df['Date'], format='%m_%d_%Y' )
 df['Formulation'] = df['Experiment'].apply(lambda x: x.split('_')[0])
 df['Formulation'] = df['Formulation'].apply(lambda x: x.split('-')[0])
-
-fig = px.box(df, x='Formulation', y='flex modulus')
+df2 = df.sort_values(by=['Formulation'], ascending=False)
+fig = px.box(df2, x='Formulation', y='flex modulus', points='all')
 
 app.layout = html.Div(children=[
     html.H1(
