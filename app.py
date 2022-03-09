@@ -64,7 +64,7 @@ fig_tens = px.box(
     x='gen_formulation',
     y='Break_Strain',
     points='all',
-    category_orders={'Formulation': meds_tens.index}
+    category_orders={'gen_formulation': meds_tens.index}
     )
 
 app.layout = html.Div(children=[
