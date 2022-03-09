@@ -9,3 +9,4 @@ __pycache__/
 test/
 .DS_Store
 scraper.py
+.vscode/
