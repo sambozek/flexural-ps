@@ -3,6 +3,8 @@ import glob
 import os
 from sklearn import linear_model
 from sklearn.metrics import r2_score
+from sql_in import psql_insert_copy
+from sqlalchemy import create_engine
 
 
 def main():
@@ -119,3 +121,8 @@ def avg_and_std(green_strength):
 
 if __name__ == '__main__':
     main()
+
+
+df = pd.read_csv('./all_flex_results.csv')
+engine = create_engine('postgresql://doadmin:RGUuvzY6n25TQF5E@cor-properties-do-user-3715075-0.b.db.ondigitalocean.com:25060/physical_properties?sslmode=require')
+df.to_sql('flexural_data', engine, if_exists='append', method=psql_insert_copy)

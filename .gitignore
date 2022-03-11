@@ -10,3 +10,4 @@ test/
 .DS_Store
 scraper.py
 .vscode/
+*.csv
