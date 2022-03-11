@@ -1,8 +1,8 @@
 # from tokenize import group
 from dash import Dash, dcc, html
-from numpy import gradient
 import plotly.express as px
 import pandas as pd
+from sqlalchemy import create_engine
 
 app = Dash(__name__)
 
@@ -22,24 +22,22 @@ def group_sort_by_formulation(df, group_col, target_column):
     return sorted_df, meds
 
 
-df_flex = pd.read_csv("https://gist.githubusercontent.com/sambozek/8b3af6bbc873402ae7b5678d30c5c8b2/raw/b5445235ab7139b36283d4ee987a3969b6014425/flex_0218.csv")
+conn = create_engine('postgresql://doadmin:RGUuvzY6n25TQF5E@cor-properties-do-user-3715075-0.b.db.ondigitalocean.com:25060/physical_properties?sslmode=require')
+df_flex = pd.read_sql('flexural_data', conn)
 
 
 df_flex['Date'] = pd.to_datetime(df_flex['Date'], format='%m_%d_%Y')
-df_flex['Formulation'] = df_flex['Experiment'].apply(lambda x: x.split('_')[0])
-df_flex['Formulation'] = df_flex['Formulation'].apply(lambda x: x.split('-')[0])
+df_flex['Formulation'] = df_flex['Experiment'].apply(
+    lambda x: x.split('_')[0])
 
-df_flex2, meds_flex = group_sort_by_formulation(df_flex, "Formulation", 'flex modulus')
+df_flex['Formulation'] = df_flex['Formulation'].apply(
+    lambda x: x.split('-')[0])
 
-# df_flex_grouped = df_flex.groupby(["Formulation"])
-# df_flex_meds = pd.DataFrame(
-#     {col:vals['flex modulus'] for col, vals in df_flex_grouped})
+df_flex2, meds_flex = group_sort_by_formulation(
+    df_flex,
+    "Formulation",
+    'flex modulus')
 
-# meds = df_flex_meds.median()
-# meds.sort_values(ascending=False, inplace=True)
-
-# df_flex_meds = df_flex_meds[meds.index]
-# df_flex2 = df_flex.sort_values(by=['Formulation'], ascending=False)
 fig_flex = px.box(
     df_flex2,
     x='Formulation',
@@ -48,17 +46,23 @@ fig_flex = px.box(
     category_orders={'Formulation': meds_flex.index}
     )
 
-df_tens = pd.read_csv("https://gist.githubusercontent.com/sambozek/050253cb59f7cb9284c41981ed1d6be3/raw/e8dee4f7f87f9b1937e0d001ada58bf241f8a6a9/tens.csv")
+df_tens = pd.read_sql('tensile_data', conn)
 
 df_tens['Date'] = pd.to_datetime(df_tens['Date'], format='%Y-%m-%d')
-df_tens['gen_formulation'] = df_tens['gen_formulation'].apply(lambda x: x.replace("A1", "A.1"))
-df_tens['gen_formulation'].replace('.+?(?=-)','', regex=True, inplace=True)
+df_tens['gen_formulation'] = df_tens['gen_formulation'].apply(
+    lambda x: x.replace("A1", "A.1"))
+df_tens['gen_formulation'].replace('.+?(?=-)', '', regex=True, inplace=True)
 df_tens['gen_formulation'].replace('.+?(?= )', '', regex=True, inplace=True)
 
 df_tens_aseries = df_tens[df_tens['gen_formulation'].str.contains('A.')]
 
 
-df_tens2, meds_tens = group_sort_by_formulation(df_tens_aseries, "gen_formulation", 'Break_Strain')
+df_tens2, meds_tens = group_sort_by_formulation(
+    df_tens_aseries,
+    "gen_formulation",
+    'Break_Strain'
+    )
+
 fig_tens = px.box(
     df_tens2,
     x='gen_formulation',
@@ -71,7 +75,7 @@ app.layout = html.Div(children=[
     html.H1(
         children='Flexural Modulus Distribution By Median',
         style={
-            'textAlign':'Center'
+            'textAlign': 'Center'
         }
     ),
     dcc.Graph(
@@ -81,7 +85,7 @@ app.layout = html.Div(children=[
     html.H1(
         children='Elongation at Break Distribution By Median',
         style={
-            'textAlign':'Center'
+            'textAlign': 'Center'
         }
     ),
     dcc.Graph(

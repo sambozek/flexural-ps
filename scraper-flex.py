@@ -5,6 +5,7 @@ from sklearn import linear_model
 from sklearn.metrics import r2_score
 from sql_in import psql_insert_copy
 from sqlalchemy import create_engine
+import numpy as np
 
 
 def main():
@@ -15,20 +16,21 @@ def main():
         flex_mod = log_converter(logs, dimension)
         flex_mod['Date'] = path.split('/')[-2]
         flex_mod['Experiment'] = path.split('/')[-1]
-        flexural_results = pd.concat([flex_mod, flexural_results], ignore_index=True)
+        flexural_results = pd.concat(
+            [flex_mod, flexural_results], ignore_index=True)
     flexural_results.to_csv('./all_flex_results.csv')
-        
+
 
 # TODO: Get list of all flexural tests
 def get_list_of_flexural_paths(path):
     directoryList = []
 
-    #return nothing if path is a file
+    # return nothing if path is a file
     if os.path.isfile(path):
         return []
 
-    #add dir to directorylist if it contains .txt files
-    if len([f for f in os.listdir(path) if f.endswith('.txt')])>0:
+    # add dir to directorylist if it contains .txt files
+    if len([f for f in os.listdir(path) if f.endswith('.txt')]) > 0:
         directoryList.append(path)
 
     for d in os.listdir(path):
@@ -42,7 +44,8 @@ def get_list_of_flexural_paths(path):
 def folder_opener(folder):
     '''
     :param folder: The folder containing the .log files and Dimensions.txt
-    :return: dataframe of dimensions and logs associated with their proper dimensional measurements.
+    :return: dataframe of dimensions and logs associated with
+     proper dimensional measurements.
     '''
     dimensions = pd.read_csv(folder + '/Dimensions.txt')
     logs = glob.glob(folder + '/*.log')
@@ -60,10 +63,12 @@ def load_travel_time(log, dimension):
     :param dimension: the dimension of the particular dogbone that was pulled
     :return: converted Load, Travel, and Time for use in the green_model
     '''
-    L = 25.4  #span length (mm)
+    L = 25.4  # span length (mm)
     log = pd.read_csv(log, header=5, sep='\t')
     load_travel = pd.DataFrame()
-    load_travel['Load'] = (3 * log.Load * L) / (2 * dimension.Width * (dimension.Depth ** 2))
+    load_travel['Load'] = (
+        (3 * log.Load * L) / (2 * dimension.Width * (dimension.Depth ** 2))
+        )
     load_travel['Travel'] = (-6 * log.Travel * dimension.Depth) / (L ** 2)
     load_travel['Time'] = log.Load / log.Travel
     return load_travel
@@ -71,8 +76,10 @@ def load_travel_time(log, dimension):
 
 def green_model(load_travel):
     '''
-    :param load_travel: the converted Load, Travel, Time from the load_travel_time function
-    :return: The green strength and associated coefficent of determination of the green strength, using 10% elongation at break.
+    :param load_travel: the converted Load, Travel, Time
+    from the load_travel_time function
+    :return: The green strength and associated coefficent of determination of
+    the green strength, using 10% elongation at break.
     '''
     constrained_travel = load_travel[load_travel["Travel"] < 0.03]
     model = linear_model.LinearRegression()
@@ -109,15 +116,19 @@ def avg_and_std(green_strength):
     '''
 
     :param green_strength: DataFrame of the green strength,
-    :return: Green Strength with its absolute and relative stdev, average coefficient of determination and its green strength.
+    :return: Green Strength with its absolute and relative stdev, 
+    average coefficient of determination and its green strength.
     '''
     avs = green_strength[['flex modulus',
                           'r2']].describe().loc[['mean', 'std']]
     avs = avs.apply(lambda x: round(x, 3))
-    avs.loc['rel_std'] = [str((avs['flex modulus'].loc['std'] /
-                                avs['flex modulus'].loc['mean']) * 100)[:2] + ' %', np.NaN]
+    avs.loc['rel_std'] = [
+        str(
+            (
+                (avs['flex modulus'].loc['std'] / avs['flex modulus']
+                ).loc['mean']) * 100)[:2] + ' %', np.NaN]
     return avs
-    
+
 
 if __name__ == '__main__':
     main()

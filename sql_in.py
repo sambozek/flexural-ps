@@ -1,6 +1,7 @@
 import csv
 from io import StringIO
 
+
 def psql_insert_copy(table, conn, keys, data_iter):
     """
     Execute SQL statement inserting data
