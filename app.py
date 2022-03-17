@@ -1,5 +1,5 @@
 # from tokenize import group
-from dash import Dash, dcc, html
+from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import pandas as pd
 from sqlalchemy import create_engine
@@ -92,7 +92,30 @@ app.layout = html.Div(children=[
         id='By-Formulation',
         figure=fig_tens
     ),
+    html.H1(
+        children="Formulation Physical Properties",
+        style={
+            'textAlign': 'Center'
+        }),
+    html.Div(
+        dcc.Dropdown(
+            list(set(
+                df_tens_aseries['gen_formulation'].unique()
+                    ).intersection(df_flex['Formulation'].unique())
+                ),
+                id= 'formulation-id'
+                    )
+            ),
+    dcc.Graph()
 ])
+
+@app.callback(
+    Output('formuation-fig', 'figure'),
+    Input('formulation-id', 'value')
+)
+def update_graph(formulation_id):
+    df_tens_aseries[df_tens_aseries['gen_formulation'] == formulation_id]
+    df_flex2[df_flex2['formulation'] == formulation_id]
 
 if __name__ == '__main__':
     app.run_server(debug=True)
