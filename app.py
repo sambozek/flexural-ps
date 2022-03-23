@@ -71,6 +71,7 @@ fig_tens = px.box(
     category_orders={'gen_formulation': meds_tens.index}
     )
 
+
 app.layout = html.Div(children=[
     html.H1(
         children='Flexural Modulus Distribution By Median',
@@ -103,19 +104,41 @@ app.layout = html.Div(children=[
                 df_tens_aseries['gen_formulation'].unique()
                     ).intersection(df_flex['Formulation'].unique())
                 ),
-                id= 'formulation-id'
+                id='formulation-id'
                     )
             ),
-    dcc.Graph()
+    dcc.Graph(
+        id='formulation-fig',
+        )
+
 ])
 
 @app.callback(
-    Output('formuation-fig', 'figure'),
+    Output('formulation-fig', 'figure'),
     Input('formulation-id', 'value')
 )
 def update_graph(formulation_id):
-    df_tens_aseries[df_tens_aseries['gen_formulation'] == formulation_id]
-    df_flex2[df_flex2['formulation'] == formulation_id]
+    tens = df_tens_aseries[df_tens_aseries['gen_formulation'] == formulation_id]
+    flex = df_flex2[df_flex2['Formulation'] == formulation_id]
+    columns = ['formulation', 'property_val', 'test_type']
+
+    tens_val = tens[['gen_formulation', 'Break_Strain']]
+    tens_val['test_type'] = "Tensile ( Elongation at Break )"
+    tens_val.columns = columns
+
+    flex_val = flex[['Formulation', 'flex modulus']]
+    flex_val['test_type'] = "Flexural (MPa)"
+    flex_val.columns = columns
+
+
+    val_df = pd.concat([tens_val, flex_val])
+
+    fig = px.box(
+        val_df,
+        x="test_type",
+        y="property_val"
+    )
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
