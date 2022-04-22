@@ -27,7 +27,7 @@ def tensile_data(file):
 
 
 files = []
-start_dir = '/Users/Sam/Tresors/INSTRON TEST DATA/Tensile/2021'
+start_dir = '/Users/Sam/Tresors/INSTRON TEST DATA/Tensile/2022'
 pattern = "*.is_tens_Exports/*_1.csv"
 
 
