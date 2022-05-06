@@ -3,6 +3,7 @@ from dash import Dash, dcc, html, Input, Output
 import plotly.express as px
 import pandas as pd
 from sqlalchemy import create_engine
+import re
 
 app = Dash(__name__)
 
@@ -26,21 +27,22 @@ conn = create_engine('postgresql://doadmin:RGUuvzY6n25TQF5E@cor-properties-do-us
 
 df_flex = pd.read_sql('flexural_data', conn)
 df_flex['Date'] = pd.to_datetime(df_flex['Date'], format='%m_%d_%Y')
-df_flex['Formulation'] = df_flex['Experiment'].apply(
-    lambda x: x.split('_')[0])
+df_flex['Formulation'] = df_flex['Experiment'].str.extract(r'(A.\d+.\d+)')
+# df_flex['Formulation'] = df_flex['Experiment'].apply(
+#     lambda x: x.split('_')[0])
 
-df_flex['Formulation'] = df_flex['Formulation'].apply(
-    lambda x: x.split('-')[0])
+# df_flex['Formulation'] = df_flex['Formulation'].apply(
+#     lambda x: x.split('-')[0])
 
 
 df_tens = pd.read_sql('tensile_data', conn)
 df_tens['Date'] = pd.to_datetime(df_tens['Date'], format='%Y-%m-%d')
 df_tens['gen_formulation'] = df_tens['gen_formulation'].apply(
     lambda x: x.replace("A1", "A.1"))
-df_tens['gen_formulation'].replace('.+?(?=-)', '', regex=True, inplace=True)
-df_tens['gen_formulation'].replace('.+?(?= )', '', regex=True, inplace=True)
-
-df_tens_aseries = df_tens[df_tens['gen_formulation'].str.contains('A.')]
+df_tens['gen_formulation_reg'] = df_tens['gen_formulation'].str.extract(r'(A.\d+.\d+)')
+# df_tens['gen_formulation'].replace('.+?(?=-)', '', regex=True, inplace=True)
+# df_tens['gen_formulation'].replace('.+?(?= )', '', regex=True, inplace=True)
+df_tens_aseries = df_tens.dropna(subset='gen_formulation_reg')
 
 
 app.layout = html.Div(children=[
@@ -94,18 +96,18 @@ app.layout = html.Div(children=[
 )
 def update_graph(range_of_interest):
 
-    df_tens['Date'] = pd.to_datetime(df_tens['Date'], format='%Y-%m-%d')
-    df_tens['gen_formulation'] = df_tens['gen_formulation'].apply(
-        lambda x: x.replace("A1", "A.1"))
-    df_tens['gen_formulation'].replace('.+?(?=-)', '', regex=True, inplace=True)
-    df_tens['gen_formulation'].replace('.+?(?= )', '', regex=True, inplace=True)
+    # df_tens['Date'] = pd.to_datetime(df_tens['Date'], format='%Y-%m-%d')
+    # df_tens['gen_formulation'] = df_tens['gen_formulation'].apply(
+    #     lambda x: x.replace("A1", "A.1"))
+    # df_tens['gen_formulation'].replace('.+?(?=-)', '', regex=True, inplace=True)
+    # df_tens['gen_formulation'].replace('.+?(?= )', '', regex=True, inplace=True)
 
-    df_tens_aseries = df_tens[df_tens['gen_formulation'].str.contains('A.')]
+    # df_tens_aseries = df_tens[df_tens['gen_formulation'].str.contains('A.')]
 
 
     df_tens2, meds_tens = group_sort_by_formulation(
         df_tens_aseries,
-        "gen_formulation",
+        "gen_formulation_reg",
         'Break_Strain'
         )
 
@@ -134,13 +136,13 @@ def update_graph(range_of_interest):
 )
 def update_graph(range_of_interest):
 
-    df_flex = pd.read_sql('flexural_data', conn)
-    df_flex['Date'] = pd.to_datetime(df_flex['Date'], format='%m_%d_%Y')
-    df_flex['Formulation'] = df_flex['Experiment'].apply(
-        lambda x: x.split('_')[0])
+    # df_flex = pd.read_sql('flexural_data', conn)
+    # df_flex['Date'] = pd.to_datetime(df_flex['Date'], format='%m_%d_%Y')
+    # df_flex['Formulation'] = df_flex['Experiment'].apply(
+    #     lambda x: x.split('_')[0])
 
-    df_flex['Formulation'] = df_flex['Formulation'].apply(
-        lambda x: x.split('-')[0])
+    # df_flex['Formulation'] = df_flex['Formulation'].apply(
+    #     lambda x: x.split('-')[0])
 
     df_flex2, meds_flex = group_sort_by_formulation(
         df_flex,
