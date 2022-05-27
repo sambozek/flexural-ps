@@ -23,7 +23,7 @@ def group_sort_by_formulation(df, group_col, target_column):
     return sorted_df, meds
 
 
-conn = create_engine('postgresql://doadmin:RGUuvzY6n25TQF5E@cor-properties-do-user-3715075-0.b.db.ondigitalocean.com:25060/physical_properties?sslmode=require')
+conn = create_engine('postgresql://app:dygtMRJDuH2QNq58@cor-properties-do-user-3715075-0.b.db.ondigitalocean.com:25060/physical_properties?sslmode=require')
 
 df_flex = pd.read_sql('flexural_data', conn)
 df_flex['Date'] = pd.to_datetime(df_flex['Date'], format='%m_%d_%Y')
